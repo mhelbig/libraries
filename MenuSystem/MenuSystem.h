@@ -66,12 +66,17 @@ public:
     byte get_num_menu_components() const;
     byte get_cur_menu_component_num() const;
 
+    void MenuItemSelected(boolean condition);
+    boolean isSelected();
+    
 private:
     MenuComponent* _p_sel_menu_component;
     MenuComponent** _menu_components;
     Menu* _p_parent;
     byte _num_menu_components;
     byte _cur_menu_component_num;
+
+    boolean _menu_item_is_selected;
 };
 
 
@@ -84,11 +89,10 @@ public:
     boolean prev(boolean loop=false);
     void select(boolean return_to_root=true);
     boolean back();
-
+    
     void set_root_menu(Menu* p_root_menu);
-
     Menu const* get_current_menu() const;
-
+    
 private:
     Menu* _p_root_menu;
     Menu* _p_curr_menu;

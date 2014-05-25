@@ -80,13 +80,24 @@ boolean Menu::prev(boolean loop)
     return false;
 }
 
+void Menu::MenuItemSelected(boolean condition)
+{
+  _menu_item_is_selected = condition;
+}
+
+boolean Menu::isSelected()
+{
+  return (_menu_item_is_selected);
+}
+
 MenuComponent* Menu::activate()
 {
     MenuComponent* pComponent = _menu_components[_cur_menu_component_num];
 
     if (pComponent == NULL)
-        return NULL;
-
+    {
+      return NULL;
+    }
     return pComponent->select();
 }
 
@@ -185,9 +196,9 @@ void MenuItem::set_select_function(void (*on_select)(MenuItem*))
 MenuComponent* MenuItem::select()
 {
     if (_on_select != NULL)
-        _on_select(this);
-
-    return 0;
+      MenuItemSelected(true);
+//      _on_select(this);       // Call the callback function if we selected an item
+    return NULL;              // return a null if we just selected a menu
 }
 
 // *********************************************************
