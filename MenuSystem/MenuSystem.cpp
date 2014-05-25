@@ -98,7 +98,7 @@ MenuComponent* Menu::select()
 void Menu::add_item(MenuItem* pItem, void (*on_select)(MenuItem*))
 {
     // Resize menu component list, keeping existing items.
-    // If it fails, there the item is not added and the function returns.
+    // If it fails, then the item is not added and the function returns.
     _menu_components = (MenuComponent**) realloc(_menu_components,
                                                  (_num_menu_components + 1)
                                                  * sizeof(MenuComponent*));
@@ -128,7 +128,7 @@ void Menu::set_parent(Menu* pParent)
 Menu const* Menu::add_menu(Menu* pMenu)
 {
     // Resize menu component list, keeping existing items.
-    // If it fails, there the item is not added and the function returns.
+    // If it fails, then the item is not added and the function returns.
     _menu_components = (MenuComponent**) realloc(_menu_components,
                                                  (_num_menu_components + 1)
                                                  * sizeof(MenuComponent*));

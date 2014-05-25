@@ -13,19 +13,28 @@
 #include <Wire.h>
 #include <Navchuk.h>
 
-#define ADDRESS 0x52
-#define CENTER_DEADBAND 10    //joystick counts for center deadband area
-#define MOTION_THRESHOLD 10   //accelerometer delta counts for motion detection
+#define ADDRESS 0x52  // I2C address for Nunchuk device
 
-#define DIGITAL_THRESHOLD 60
-#define NUNCHUK_IDLE ' '//nothing selected
+// A/D constants
+#define CENTER_DEADBAND 10    //joystick counts for center deadband area
+#define MOTION_THRESHOLD 20   //accelerometer delta counts for motion detection
+#define DIGITAL_THRESHOLD 45  //analog displacement value needed to be considered active in a direction
+
+// Timing constants
+#define BUTTON_HELD_THRESHOLD 2000 //time in mS before a direction is considered held & reports a lower-case ASCII character
+#define KEY_REPEAT_DELAY      750  //time in mS to wait before doing key repeat on any joystick axis
+#define KEY_REPEAT_RATE       400  //time in mS that keys repeat at 
+#define NUNCHUK_IDLE_DELAY  10000 //60000  //time in mS that nunchuk registered no movement and is considered idle
+#define NUNCHUCK_IDLE_SAMPLE_TIME 250 //time in mS between accelerometer readings for movement detection
+
+// direction definitions
+#define NUNCHUK_NULL ' '//nothing selected
 #define NUNCHUK_F 'F'   //joystick forward
 #define NUNCHUK_B 'B'   //joystick backward
 #define NUNCHUK_L 'L'   //joystick left
 #define NUNCHUK_R 'R'   //joystick right
 #define NUNCHUK_Z 'Z'   //Z button pressed
 #define NUNCHUK_C 'C'   //C button pressed
-#define NUNCHUK_M 'M'   //Motion detected from accelerometers
 
 void Navchuk::init()
 {
@@ -41,8 +50,14 @@ void Navchuk::update()
 {
   int count = 0;
   int values[6];
+  static long repeatDelayTime;
+  static long repeatRateTime;
+  static long buttonHeldTime;
+  static long nunchukIdleTime;
+  static long nunchukIdleSampleTime;
 
-  Wire.requestFrom(ADDRESS, 6);
+// Serial.print("."); 
+ Wire.requestFrom(ADDRESS, 6);
 
   while(Wire.available())
   {
@@ -87,17 +102,8 @@ void Navchuk::update()
 //Higher priority functions go at the bottom of the function, as these are the last
 //to be processed and will override any previous functions
 
-  userInputState = NUNCHUK_IDLE; //default to no action
+  userInputState = NUNCHUK_NULL; //default to no action unless overriden by data from Nunchuk
 
-  // Process the accelerometer data for motion detection purposes only
-  accelX = (values[2] << 2) | ((values[5] >> 2) & 3);
-  accelY = (values[3] << 2) | ((values[5] >> 4) & 3);
-  accelZ = (values[4] << 2) | ((values[5] >> 6) & 3);
-
-  if (abs(accelY - accelPrevious) > MOTION_THRESHOLD)
-    userInputState = NUNCHUK_M;
-  accelPrevious = accelY;
-  
 // Process the four digital joystick directions:
   if (analogDisplacementX != 0 || analogDisplacementY != 0)
   { 
@@ -124,14 +130,55 @@ void Navchuk::update()
     userInputState = NUNCHUK_C;
 
 // Process the edge sensing of the user inputs
-  if(userInputState != userInputPrevious)
+  if(userInputState != userInputPrevious) // we just changed to a new direction
   {
     userInput = userInputState; //set the edge state when the value first changes
     userInputPrevious = userInputState;
+    repeatDelayTime = millis() + KEY_REPEAT_DELAY;
+    buttonHeldTime = millis() + BUTTON_HELD_THRESHOLD;
   }
-  else
+  else if (userInputState != ' ')   // it's being held in a direction and is not a null
   {
-    userInput = NUNCHUK_IDLE; //clear the edge state once the values are the same
+    userInput = NUNCHUK_NULL; //clear the edge state once the values are the same
+    if (millis() > repeatDelayTime) //this means it's been held long enough to do the repeat
+    {
+// Process the key repeat function if it's time to send a repeat character
+      if(millis() > repeatRateTime)
+        {
+          repeatRateTime = millis() + KEY_REPEAT_RATE;
+          userInput = userInputState; //put a keystroke back in there (it'll get cleared the next time thru
+        }  
+    }
+    if(millis() > buttonHeldTime)
+      {
+        userInput = userInputState + 32;  //Offset characters up to their lowercase ASCII value
+        buttonHeldTime = millis() + BUTTON_HELD_THRESHOLD;
+      }
+  }
+
+  // Process the accelerometer data to see if someone is using the nunchuk or it's sitting still
+  accelX = (values[2] << 2) | ((values[5] >> 2) & 3);
+  accelY = (values[3] << 2) | ((values[5] >> 4) & 3);
+  accelZ = (values[4] << 2) | ((values[5] >> 6) & 3);
+
+  if(millis() > nunchukIdleTime)
+    {
+      isIdle = 1;
+    }
+  if (abs(accelX - accelPreviousX) > MOTION_THRESHOLD ||
+      abs(accelY - accelPreviousY) > MOTION_THRESHOLD ||
+      abs(accelZ - accelPreviousZ) > MOTION_THRESHOLD ||
+      userInputState != NUNCHUK_NULL)
+  {
+    nunchukIdleTime = millis() + NUNCHUK_IDLE_DELAY;
+    isIdle = 0;
+    if (millis() > nunchukIdleSampleTime)
+    {
+      nunchukIdleSampleTime = millis() + NUNCHUCK_IDLE_SAMPLE_TIME;
+        accelPreviousX = accelX;
+        accelPreviousY = accelY;
+        accelPreviousZ = accelZ;
+     }
   }
 }
 

@@ -23,6 +23,7 @@ class Navchuk
 	char analogDirectionY;      //which direction + or -
   char userInputState;        //enumerated value that reflects the 4 basic joystick directions
   char userInput;             //enumerated value for joystick directions and button presses
+  bool isIdle;                //flag indicating if the nunchuk has not been moved for a set amount of time
   
   void init();
   void update();
@@ -32,15 +33,17 @@ class Navchuk
 	int accelX;
   int accelY;
   int accelZ;
-  int accelPrevious;
-  
+  int accelPreviousX;
+  int accelPreviousY;
+  int accelPreviousZ;
+/*  
   int zButtonState;
   int zButtonPrevious;
   int zButtonEdge;
   int cButtonState;
   int cButtonPrevious;
   int cButtonEdge;
-  
+*/  
   void _sendByte(byte data, byte location);
 };
 
