@@ -83,7 +83,6 @@ boolean Menu::prev(boolean loop)
 MenuComponent* Menu::activate()
 {
     MenuComponent* pComponent = _menu_components[_cur_menu_component_num];
-
     if (pComponent == NULL)
     {
       return NULL;
@@ -118,12 +117,12 @@ void Menu::add_item(MenuItem* pItem, void (*on_select)(MenuItem*))
 
 Menu const* Menu::get_parent() const
 {
-    return _p_parent;
+  return _p_parent;
 }
 
 void Menu::set_parent(Menu* pParent)
 {
-    _p_parent = pParent;
+  _p_parent = pParent;
 }
 
 Menu const* Menu::add_menu(Menu* pMenu)
@@ -186,8 +185,10 @@ void MenuItem::set_select_function(void (*on_select)(MenuItem*))
 MenuComponent* MenuItem::select()
 {
     if (_on_select != NULL)
+    {
       _on_select(this);       // Call the callback function if we selected an item
-    return NULL;              // return a null if we just selected a menu
+    }
+    return NULL;
 }
 
 // *********************************************************
@@ -202,7 +203,7 @@ MenuSystem::MenuSystem()
 
 boolean MenuSystem::next(boolean loop)
 {
-    return _p_curr_menu->next(loop);
+  return _p_curr_menu->next(loop);
 }
 
 boolean MenuSystem::prev(boolean loop)
@@ -214,17 +215,19 @@ void MenuSystem::select(boolean return_to_root)
 {
     MenuComponent* pComponent = _p_curr_menu->activate();
 
-    if (pComponent != NULL)
+    if (pComponent != NULL) // a menu was selected
     {
-        _p_curr_menu = (Menu*) pComponent;
+      _p_curr_menu = (Menu*) pComponent;
     }
-    else
+    else // A menu item was selected.
     {
-        // A menu item was selected.
+        // the menuItem callback function has completed and left us here
         // If return_to_root is true, reset the menu ready for when it's used
         // again; otherwise, the current menu is remembered.
         if (return_to_root)
-            _p_curr_menu = _p_root_menu;
+        {
+          _p_curr_menu = _p_root_menu;
+         }
     }
 }
 
