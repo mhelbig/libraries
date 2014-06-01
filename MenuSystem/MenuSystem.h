@@ -16,6 +16,8 @@
 #endif
 
 extern boolean _cur_menu_item_selected;
+extern boolean _cur_menu_item_selected_previous;
+extern boolean _cur_menu_just_selected;
 
 class MenuComponent
 {
@@ -84,14 +86,15 @@ public:
 
     boolean next(boolean loop=false);
     boolean prev(boolean loop=false);
-    void select(boolean return_to_root=true);
+    boolean select(boolean return_to_root=true);
     boolean back();
     
     void set_root_menu(Menu* p_root_menu);
     Menu const* get_current_menu() const;
     
-    void set_menu_item_selected(boolean state);
+    void deselect_set_menu_item(void);
     boolean menu_item_is_selected(void);
+    boolean menu_item_was_just_selected (void);
 
     private:
     Menu* _p_root_menu;

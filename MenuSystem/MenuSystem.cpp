@@ -9,6 +9,8 @@
 #include "MenuSystem.h"
 
 boolean _cur_menu_item_selected = false;
+boolean _cur_menu_item_selected_previous = false;
+boolean _cur_menu_just_selected = false;
 
 // *********************************************************
 // MenuComponent
@@ -187,8 +189,11 @@ MenuComponent* MenuItem::select()  // this is called when a Menu Item is selecte
 {
     if (_on_select != NULL)
     {
-       _cur_menu_item_selected=true;
-//       Serial.println("_cur_menu_item_selected=true  function call completed");
+      if (_cur_menu_item_selected == true && _cur_menu_item_selected_previous == false)
+        _cur_menu_just_selected = true;
+
+      _cur_menu_item_selected_previous = _cur_menu_item_selected;
+      _cur_menu_item_selected=true;
       _on_select(this);       // This calls the callback function
     }
     return NULL;
@@ -214,13 +219,14 @@ boolean MenuSystem::prev(boolean loop)
     return _p_curr_menu->prev(loop);
 }
 
-void MenuSystem::select(boolean return_to_root)
+boolean MenuSystem::select(boolean return_to_root)
 {
     MenuComponent* pComponent = _p_curr_menu->activate();
 
     if (pComponent != NULL) // a menu was selected
     {
       _p_curr_menu = (Menu*) pComponent;
+      return(true);         // this flags the calling of displayMenu()
     }
     else // A menu item was selected.
     {
@@ -232,6 +238,7 @@ void MenuSystem::select(boolean return_to_root)
           _p_curr_menu = _p_root_menu;
          }
     }
+    return(false);
 }
 
 boolean MenuSystem::back()
@@ -257,13 +264,19 @@ Menu const* MenuSystem::get_current_menu() const
   return _p_curr_menu;
 }
 
-void MenuSystem::set_menu_item_selected(boolean state)
+void MenuSystem::deselect_set_menu_item(void)
 {
-  _cur_menu_item_selected = state;
-  Serial.print("setting _cur_menu_item_selected = "); Serial.println(_cur_menu_item_selected);
+  _cur_menu_item_selected = false;
 }
 
 boolean MenuSystem::menu_item_is_selected(void)
 {
   return (_cur_menu_item_selected);
+}
+
+boolean MenuSystem::menu_item_was_just_selected (void)
+{
+    boolean justSelected = _cur_menu_just_selected;
+    _cur_menu_just_selected = false;  // clear the flag once we read it
+    return (justSelected);
 }
