@@ -15,6 +15,8 @@
   #include <WProgram.h>
 #endif
 
+extern boolean _cur_menu_item_selected;
+
 class MenuComponent
 {
 public:
@@ -36,9 +38,9 @@ public:
     MenuItem(char* name);
 
     void set_select_function(void (*on_select)(MenuItem*));
-
+ 
     virtual MenuComponent* select();
-
+   
 private:
     void (*_on_select)(MenuItem*);
 };
@@ -88,7 +90,10 @@ public:
     void set_root_menu(Menu* p_root_menu);
     Menu const* get_current_menu() const;
     
-private:
+    void set_menu_item_selected(boolean state);
+    boolean menu_item_is_selected(void);
+
+    private:
     Menu* _p_root_menu;
     Menu* _p_curr_menu;
 };

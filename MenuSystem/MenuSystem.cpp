@@ -8,11 +8,13 @@
 
 #include "MenuSystem.h"
 
+boolean _cur_menu_item_selected = false;
+
 // *********************************************************
 // MenuComponent
 // *********************************************************
 
-MenuComponent::MenuComponent(char* name)
+MenuComponent::MenuComponent(char* name) 
 : _name(name)
 {
 }
@@ -26,7 +28,6 @@ void MenuComponent::set_name(char* name)
 {
     _name = name;
 }
-
 
 // *********************************************************
 // Menu
@@ -87,7 +88,7 @@ MenuComponent* Menu::activate()
     {
       return NULL;
     }
-    return pComponent->select();
+    return pComponent->select();  //I think this calls the callback function of the menu item thru the virtual function thing
 }
 
 MenuComponent* Menu::select()
@@ -182,11 +183,13 @@ void MenuItem::set_select_function(void (*on_select)(MenuItem*))
     _on_select = on_select;
 }
 
-MenuComponent* MenuItem::select()
+MenuComponent* MenuItem::select()  // this is called when a Menu Item is selected
 {
     if (_on_select != NULL)
     {
-      _on_select(this);       // Call the callback function if we selected an item
+       _cur_menu_item_selected=true;
+//       Serial.println("_cur_menu_item_selected=true  function call completed");
+      _on_select(this);       // This calls the callback function
     }
     return NULL;
 }
@@ -252,4 +255,15 @@ void MenuSystem::set_root_menu(Menu* p_root_menu)
 Menu const* MenuSystem::get_current_menu() const
 {
   return _p_curr_menu;
+}
+
+void MenuSystem::set_menu_item_selected(boolean state)
+{
+  _cur_menu_item_selected = state;
+  Serial.print("setting _cur_menu_item_selected = "); Serial.println(_cur_menu_item_selected);
+}
+
+boolean MenuSystem::menu_item_is_selected(void)
+{
+  return (_cur_menu_item_selected);
 }
