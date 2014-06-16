@@ -28,13 +28,15 @@
 #define NUNCHUCK_IDLE_SAMPLE_TIME 250 //time in mS between accelerometer readings for movement detection
 
 // direction definitions
-#define NUNCHUK_NULL ' '//nothing selected
-#define NUNCHUK_F 'F'   //joystick forward
-#define NUNCHUK_B 'B'   //joystick backward
-#define NUNCHUK_L 'L'   //joystick left
-#define NUNCHUK_R 'R'   //joystick right
-#define NUNCHUK_Z 'Z'   //Z button pressed
-#define NUNCHUK_C 'C'   //C button pressed
+#define NUNCHUK_NULL ' ' //nothing selected
+#define NUNCHUK_F 'F'    //joystick forward
+#define NUNCHUK_B 'B'    //joystick backward
+#define NUNCHUK_L 'L'    //joystick left
+#define NUNCHUK_R 'R'    //joystick right
+#define NUNCHUK_Z 'Z'    //Z button pressed
+#define NUNCHUK_C 'C'    //C button pressed
+#define NUNCHUK_IDLE 'I' // Nunchuk has been idle for a while
+#define NUNCHUK_MOVE 'M' // Nunchuck is being moved around
 
 void Navchuk::init()
 {
@@ -82,6 +84,7 @@ void Navchuk::update()
 	  analogDirectionX = 1;   //joystick is shifted to the right
   }
 
+  
 // Process the Y axis displacement and direction:  
   analogDisplacementY = abs(128 - values[1]);
   if (analogDisplacementY < CENTER_DEADBAND)  //joystick is inside the center deadband
@@ -104,7 +107,32 @@ void Navchuk::update()
 
   userInputState = NUNCHUK_NULL; //default to no action unless overriden by data from Nunchuk
 
-// Process the four digital joystick directions:
+  // Process the accelerometer data to see if someone is using the nunchuk or it's sitting still
+  accelX = (values[2] << 2) | ((values[5] >> 2) & 3);
+  accelY = (values[3] << 2) | ((values[5] >> 4) & 3);
+  accelZ = (values[4] << 2) | ((values[5] >> 6) & 3);
+
+  if (abs(accelX - accelPreviousX) > MOTION_THRESHOLD ||
+      abs(accelY - accelPreviousY) > MOTION_THRESHOLD ||
+      abs(accelZ - accelPreviousZ) > MOTION_THRESHOLD ||
+      userInputState != NUNCHUK_NULL)
+    {
+      nunchukIdleTime = millis() + NUNCHUK_IDLE_DELAY;
+      userInputState = NUNCHUK_MOVE;
+    }
+  if (millis() > nunchukIdleSampleTime)
+  {
+    nunchukIdleSampleTime = millis() + NUNCHUCK_IDLE_SAMPLE_TIME;
+      accelPreviousX = accelX;
+      accelPreviousY = accelY;
+      accelPreviousZ = accelZ;
+  }
+  if(millis() > nunchukIdleTime)
+    {
+      userInputState = NUNCHUK_IDLE;
+    }
+
+    // Process the four digital joystick directions:
   if (analogDisplacementX != 0 || analogDisplacementY != 0)
   { 
     // Process the X-axis
@@ -155,32 +183,7 @@ void Navchuk::update()
         buttonHeldTime = millis() + BUTTON_HELD_THRESHOLD;
       }
   }
-
-  // Process the accelerometer data to see if someone is using the nunchuk or it's sitting still
-  accelX = (values[2] << 2) | ((values[5] >> 2) & 3);
-  accelY = (values[3] << 2) | ((values[5] >> 4) & 3);
-  accelZ = (values[4] << 2) | ((values[5] >> 6) & 3);
-
-  if(millis() > nunchukIdleTime)
-    {
-      isIdle = 1;
-    }
-  if (abs(accelX - accelPreviousX) > MOTION_THRESHOLD ||
-      abs(accelY - accelPreviousY) > MOTION_THRESHOLD ||
-      abs(accelZ - accelPreviousZ) > MOTION_THRESHOLD ||
-      userInputState != NUNCHUK_NULL)
-  {
-    nunchukIdleTime = millis() + NUNCHUK_IDLE_DELAY;
-    isIdle = 0;
-    if (millis() > nunchukIdleSampleTime)
-    {
-      nunchukIdleSampleTime = millis() + NUNCHUCK_IDLE_SAMPLE_TIME;
-        accelPreviousX = accelX;
-        accelPreviousY = accelY;
-        accelPreviousZ = accelZ;
-     }
-  }
-}
+}  
 
 void Navchuk::_sendByte(byte data, byte location)
 {
