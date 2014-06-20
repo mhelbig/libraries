@@ -117,17 +117,17 @@ void Navchuk::update()
       abs(accelZ - accelPreviousZ) > MOTION_THRESHOLD ||
       userInputState != NUNCHUK_NULL)
     {
-      nunchukIdleTime = millis() + NUNCHUK_IDLE_DELAY;
+      nunchukIdleTime = millis();
       userInputState = NUNCHUK_MOVE;
     }
-  if (millis() > nunchukIdleSampleTime)
+  if (millis() - nunchukIdleSampleTime > NUNCHUCK_IDLE_SAMPLE_TIME)
   {
-    nunchukIdleSampleTime = millis() + NUNCHUCK_IDLE_SAMPLE_TIME;
+    nunchukIdleSampleTime = millis();
       accelPreviousX = accelX;
       accelPreviousY = accelY;
       accelPreviousZ = accelZ;
   }
-  if(millis() > nunchukIdleTime)
+  if(millis() - nunchukIdleTime > NUNCHUK_IDLE_DELAY)
     {
       userInputState = NUNCHUK_IDLE;
     }
@@ -162,25 +162,25 @@ void Navchuk::update()
   {
     userInput = userInputState; //set the edge state when the value first changes
     userInputPrevious = userInputState;
-    repeatDelayTime = millis() + KEY_REPEAT_DELAY;
-    buttonHeldTime = millis() + BUTTON_HELD_THRESHOLD;
+    repeatDelayTime = millis();
+    buttonHeldTime = millis();
   }
   else if (userInputState != ' ')   // it's being held in a direction and is not a null
   {
     userInput = NUNCHUK_NULL; //clear the edge state once the values are the same
-    if (millis() > repeatDelayTime) //this means it's been held long enough to do the repeat
+    if (millis() - repeatDelayTime > KEY_REPEAT_DELAY) //this means it's been held long enough to do the repeat
     {
 // Process the key repeat function if it's time to send a repeat character
-      if(millis() > repeatRateTime)
+      if(millis() - repeatRateTime > KEY_REPEAT_RATE)
         {
-          repeatRateTime = millis() + KEY_REPEAT_RATE;
+          repeatRateTime = millis();
           userInput = userInputState; //put a keystroke back in there (it'll get cleared the next time thru
         }  
     }
-    if(millis() > buttonHeldTime)
+    if(millis() - buttonHeldTime > BUTTON_HELD_THRESHOLD)
       {
         userInput = userInputState + 32;  //Offset characters up to their lowercase ASCII value
-        buttonHeldTime = millis() + BUTTON_HELD_THRESHOLD;
+        buttonHeldTime = millis();
       }
   }
 }  
