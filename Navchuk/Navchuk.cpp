@@ -17,7 +17,7 @@
 
 // A/D constants
 #define CENTER_DEADBAND 10    //joystick counts for center deadband area
-#define MOTION_THRESHOLD 20   //accelerometer delta counts for motion detection
+#define MOTION_THRESHOLD 40   //accelerometer delta counts for motion detection
 #define DIGITAL_THRESHOLD 45  //analog displacement value needed to be considered active in a direction
 
 // Timing constants
@@ -58,7 +58,6 @@ void Navchuk::update()
   static long nunchukIdleTime;
   static long nunchukIdleSampleTime;
 
-// Serial.print("."); 
  Wire.requestFrom(ADDRESS, 6);
 
   while(Wire.available())
@@ -83,7 +82,6 @@ void Navchuk::update()
 	else
 	  analogDirectionX = 1;   //joystick is shifted to the right
   }
-
   
 // Process the Y axis displacement and direction:  
   analogDisplacementY = abs(128 - values[1]);
@@ -107,7 +105,7 @@ void Navchuk::update()
 
   userInputState = NUNCHUK_NULL; //default to no action unless overriden by data from Nunchuk
 
-  // Process the accelerometer data to see if someone is using the nunchuk or it's sitting still
+// Process the accelerometer data to see if someone is using the nunchuk or it's sitting still
   accelX = (values[2] << 2) | ((values[5] >> 2) & 3);
   accelY = (values[3] << 2) | ((values[5] >> 4) & 3);
   accelZ = (values[4] << 2) | ((values[5] >> 6) & 3);
@@ -115,11 +113,14 @@ void Navchuk::update()
   if (abs(accelX - accelPreviousX) > MOTION_THRESHOLD ||
       abs(accelY - accelPreviousY) > MOTION_THRESHOLD ||
       abs(accelZ - accelPreviousZ) > MOTION_THRESHOLD ||
-      userInputState != NUNCHUK_NULL)
-    {
-      nunchukIdleTime = millis();
-      userInputState = NUNCHUK_MOVE;
-    }
+      (userInput != NUNCHUK_NULL  && userInput != NUNCHUK_IDLE) ||
+      analogDisplacementX != 0 ||
+      analogDisplacementY != 0)
+  {
+    nunchukIdleTime = millis();
+    userInputState = NUNCHUK_MOVE;
+  }
+
   if (millis() - nunchukIdleSampleTime > NUNCHUCK_IDLE_SAMPLE_TIME)
   {
     nunchukIdleSampleTime = millis();
@@ -127,12 +128,13 @@ void Navchuk::update()
       accelPreviousY = accelY;
       accelPreviousZ = accelZ;
   }
-  if(millis() - nunchukIdleTime > NUNCHUK_IDLE_DELAY)
-    {
-      userInputState = NUNCHUK_IDLE;
-    }
 
-    // Process the four digital joystick directions:
+  if(millis() - nunchukIdleTime > NUNCHUK_IDLE_DELAY)
+  {
+    userInputState = NUNCHUK_IDLE;
+  }
+
+// Process the four digital joystick directions:
   if (analogDisplacementX != 0 || analogDisplacementY != 0)
   { 
     // Process the X-axis
@@ -142,7 +144,7 @@ void Navchuk::update()
         else userInputState = NUNCHUK_L;
       }
 
-  // Process the Y axis:  
+// Process the Y axis:  
     if (analogDisplacementY > DIGITAL_THRESHOLD)
     {
       if (analogDirectionY > 0) userInputState = NUNCHUK_F;
@@ -167,21 +169,28 @@ void Navchuk::update()
   }
   else if (userInputState != ' ')   // it's being held in a direction and is not a null
   {
-    userInput = NUNCHUK_NULL; //clear the edge state once the values are the same
-    if (millis() - repeatDelayTime > KEY_REPEAT_DELAY) //this means it's been held long enough to do the repeat
+    userInput = NUNCHUK_NULL; //clear the edge state since the values are the same
+
+ // Process the key repeat delay
+    if(userInputState !='I' && userInputState != 'M')  // don't repeat the idle modes
     {
-// Process the key repeat function if it's time to send a repeat character
-      if(millis() - repeatRateTime > KEY_REPEAT_RATE)
-        {
-          repeatRateTime = millis();
-          userInput = userInputState; //put a keystroke back in there (it'll get cleared the next time thru
-        }  
-    }
-    if(millis() - buttonHeldTime > BUTTON_HELD_THRESHOLD)
+      if (millis() - repeatDelayTime > KEY_REPEAT_DELAY) //this means it's been held long enough to do the repeat
       {
-        userInput = userInputState + 32;  //Offset characters up to their lowercase ASCII value
-        buttonHeldTime = millis();
+
+   // Process the key repeat function
+        if(millis() - repeatRateTime > KEY_REPEAT_RATE)
+          {
+            repeatRateTime = millis();
+            userInput = userInputState; //put a keystroke back in there (it'll get cleared the next time thru
+          }  
       }
+   // Process the button held function
+     if(millis() - buttonHeldTime > BUTTON_HELD_THRESHOLD)
+        {
+          userInput = userInputState + 32;  //Offset characters up to their lowercase ASCII value
+          buttonHeldTime = millis();
+        }
+     }
   }
 }  
 
