@@ -22,8 +22,8 @@
 
 // Timing constants
 #define BUTTON_HELD_THRESHOLD 2000 //time in mS before a direction is considered held & reports a lower-case ASCII character
-#define KEY_REPEAT_DELAY      650  //time in mS to wait before doing key repeat on any joystick axis
-#define KEY_REPEAT_RATE       400  //time in mS that keys repeat at 
+#define KEY_REPEAT_DELAY      400  //time in mS to wait before doing key repeat on any joystick axis
+#define KEY_REPEAT_RATE       200  //time in mS that keys repeat at 
 #define NUNCHUK_IDLE_DELAY  300000 //time in mS that nunchuk registered no movement and is considered idle
 #define NUNCHUCK_IDLE_SAMPLE_TIME 250 //time in mS between accelerometer readings for movement detection
 
