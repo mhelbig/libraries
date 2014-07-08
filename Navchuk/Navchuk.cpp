@@ -37,6 +37,7 @@
 #define NUNCHUK_C 'C'    //C button pressed
 #define NUNCHUK_IDLE 'I' // Nunchuk has been idle for a while
 #define NUNCHUK_MOVE 'M' // Nunchuck is being moved around
+#define NUNCHUK_ERR  'E' // Nunchuk not reading valid values
 
 void Navchuk::init()
 {
@@ -158,6 +159,10 @@ void Navchuk::update()
 // Process the C pushbutton:
   if (!((values[5] >> 1) & 1))
     userInputState = NUNCHUK_C;
+    
+// Process the error condition:
+  if (values[0] == 0 && values[1] == 0)
+     userInputState = NUNCHUK_ERR;
 
 // Process the edge sensing of the user inputs
   if(userInputState != userInputPrevious) // we just changed to a new direction
