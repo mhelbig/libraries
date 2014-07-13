@@ -30,41 +30,44 @@
 #define USE_MCP_DAC_LDAC 1
 
 // use arduino pins 2, 3, 4, 5 for DAC
+// using Mega pins 46, 47, 48, 49 for DAC
 
-// pin 2 is DAC chip select
-
+// UNO = pin 2 is DAC chip select
+// MEGA = pin 46
 /** Data direction register for DAC chip select. */
-#define MCP_DAC_CS_DDR  PIN2_DDRREG
+#define MCP_DAC_CS_DDR  PIN46_DDRREG
 /** Port register for DAC chip select. */
-#define MCP_DAC_CS_PORT PIN2_PORTREG
+#define MCP_DAC_CS_PORT PIN46_PORTREG
 /** Port bit number for DAC chip select. */
-#define MCP_DAC_CS_BIT  PIN2_BITNUM
+#define MCP_DAC_CS_BIT  PIN46_BITNUM
 
-// pin 3 is DAC serial clock
+// UNO = pin 3 is DAC serial clock
+// MEGA = pin 47
 /** Data direction register for DAC clock. */
-#define MCP_DAC_SCK_DDR  PIN3_DDRREG
+#define MCP_DAC_SCK_DDR  PIN47_DDRREG
 /** Port register for DAC clock. */
-#define MCP_DAC_SCK_PORT PIN3_PORTREG
+#define MCP_DAC_SCK_PORT PIN47_PORTREG
 /** Port bit number for DAC clock. */
-#define MCP_DAC_SCK_BIT  PIN3_BITNUM
+#define MCP_DAC_SCK_BIT  PIN47_BITNUM
 
-// pin 4 is DAC serial data in
-
+// UNO = pin 4 is DAC serial data in
+// MEGA = pin 48
 /** Data direction register for DAC serial in. */
-#define MCP_DAC_SDI_DDR  PIN4_DDRREG
+#define MCP_DAC_SDI_DDR  PIN48_DDRREG
 /** Port register for DAC clock. */
-#define MCP_DAC_SDI_PORT PIN4_PORTREG
+#define MCP_DAC_SDI_PORT PIN48_PORTREG
 /** Port bit number for DAC clock. */
-#define MCP_DAC_SDI_BIT  PIN4_BITNUM
+#define MCP_DAC_SDI_BIT  PIN48_BITNUM
 
-// pin 5 is LDAC if used
+// UNO = pin 5 is LDAC if used
+// MEGA = pin 49
 #if USE_MCP_DAC_LDAC
 /** Data direction register for Latch DAC Input. */
-#define MCP_DAC_LDAC_DDR  PIN5_DDRREG
+#define MCP_DAC_LDAC_DDR  PIN49_DDRREG
 /** Port register for Latch DAC Input. */
-#define MCP_DAC_LDAC_PORT PIN5_PORTREG
+#define MCP_DAC_LDAC_PORT PIN49_PORTREG
 /** Port bit number for Latch DAC Input. */
-#define MCP_DAC_LDAC_BIT  PIN5_BITNUM
+#define MCP_DAC_LDAC_BIT  PIN49_BITNUM
 #endif // USE_MCP_DAC_LDAC
 
 #endif // WavePinDefs_h
