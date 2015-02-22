@@ -24,7 +24,7 @@
 #define BUTTON_HELD_THRESHOLD 1500 //time in mS before a direction is considered held & reports a lower-case ASCII character
 #define KEY_REPEAT_DELAY      400  //time in mS to wait before doing key repeat on any joystick axis
 #define KEY_REPEAT_RATE       200  //time in mS that keys repeat at 
-#define NUNCHUK_IDLE_DELAY   2000 //time in mS that nunchuk registered no movement and is considered idle
+#define NUNCHUK_IDLE_DEFAULT  15000//default time in mS that no movement of nunchuk is considered idle
 #define NUNCHUCK_IDLE_SAMPLE_TIME 250 //time in mS between accelerometer readings for movement detection
 
 // direction definitions
@@ -46,7 +46,13 @@ void Navchuk::init()
   Navchuk::_sendByte(0x55, 0xF0);
   Navchuk::_sendByte(0x00, 0xFB);
 
+  nunchukIdleLimit = NUNCHUK_IDLE_DEFAULT;
   Navchuk::update();
+}
+
+void Navchuk::setIdleTime(long setting)
+{
+  nunchukIdleLimit = setting*1000;  // Convert from seconds to milliseconds
 }
 
 void Navchuk::update()
@@ -122,7 +128,7 @@ void Navchuk::update()
     userInputState = NUNCHUK_MOVE;
   }
 
-  if (millis() - nunchukIdleSampleTime > NUNCHUCK_IDLE_SAMPLE_TIME)
+  if (millis() - nunchukIdleSampleTime > nunchukIdleLimit)
   {
     nunchukIdleSampleTime = millis();
       accelPreviousX = accelX;
@@ -130,7 +136,7 @@ void Navchuk::update()
       accelPreviousZ = accelZ;
   }
 
-  if(millis() - nunchukIdleTime > NUNCHUK_IDLE_DELAY)
+  if(millis() - nunchukIdleTime > nunchukIdleLimit)
   {
     userInputState = NUNCHUK_IDLE;
   }

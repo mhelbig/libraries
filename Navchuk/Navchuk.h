@@ -25,8 +25,9 @@ class Navchuk
   char userInput;             //enumerated value for joystick directions and button presses
   
   void init();
+  void setIdleTime(long);
   void update();
-
+  
   private:
   char userInputPrevious;  //used for edge detection
 	int accelX;
@@ -35,6 +36,7 @@ class Navchuk
   int accelPreviousX;
   int accelPreviousY;
   int accelPreviousZ;
+  int nunchukIdleLimit;				  //time in mS where no movement detected by the accelerometers is considered idle
 /*  
   int zButtonState;
   int zButtonPrevious;
