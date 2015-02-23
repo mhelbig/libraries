@@ -25,5 +25,9 @@ boolean NBtimer::expired(void)
 
 long NBtimer::remaining(void)
 {
-  return (timeStamp - millis() + timeSetting);
+  if (millis() - timeStamp < timeSetting)
+    return (timeStamp - millis() + timeSetting);
+  else
+    return (0);
 }
+
