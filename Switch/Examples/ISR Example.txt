@@ -1,0 +1,23 @@
+#include <Arduino.h>
+#include "Switch.h"
+#include <FrequencyTimer2.h>
+  
+Switch speedUpBtn(1);
+Switch speedDownBtn(2);
+Switch buttonLeft(3);
+Switch buttonRight(4);
+  
+void setup(void)
+{ Serial.begin(9600);
+  FrequencyTimer2::setPeriod(1000);
+  FrequencyTimer2::setOnOverflow(timer2ISR);
+}
+  
+void loop(void)
+{ printAll(); // run slow functions in loop()
+}
+  
+void timer2ISR()
+{ pollAll(); // polling buttons has priority
+  buttonActions();
+}
